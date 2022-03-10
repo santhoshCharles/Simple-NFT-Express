@@ -384,20 +384,20 @@ let GenresList = [
   },
 ];
 
-const usersDetails = {
+let usersDetails = {
   "santhosh@gmail.com": {
     firstName: "Santhosh",
     lastName: "A",
     mobileNumber: "6986326987",
     type: "admin",
-    email: "santhosh@gmail.com"
+    email: "santhosh@gmail.com",
   },
   "san@gmail.com": {
     firstName: "San",
     lastName: "J",
     mobileNumber: "6986326987",
     type: "admin",
-    email: "san@gmail.com"
+    email: "san@gmail.com",
   },
 };
 
@@ -421,15 +421,15 @@ function loginMidleware(req, res, next) {
         next();
       } else {
         res.statusCode = 401;
-        res.send({message: "Unauthorized User"});
+        res.send({ message: "Unauthorized User" });
       }
     } else {
       res.statusCode = 401;
-      res.send({message: "Unauthorized User"});
+      res.send({ message: "Unauthorized User" });
     }
     //next();
   } catch (err) {
-    res.send({message: "Unauthorized User"});
+    res.send({ message: "Unauthorized User" });
   }
 }
 
@@ -490,12 +490,23 @@ function deleteGenresList(req, res) {
   }
 }
 
-app.post("/login", loginMidleware, login);
+function editProfile(req, res) {
+  try {
+    const { email } = req.body;
+    usersDetails[email] = req.body;
+    res.send(usersDetails[email]);
+  } catch (err) {
+    res.statusCode = 401;
+    res.send("Somthing going wrong");
+  }
+}
 
+app.post("/login", loginMidleware, login);
 app.get("/artistList", getArtistList);
 app.get("/genresList", getGenresList);
 app.post("/genresList", addGenresList);
 app.put("/genresList", editGenresList);
 app.delete("/genresList", deleteGenresList);
+app.post("/Profile", editProfile);
 
 app.listen(5001);
