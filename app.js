@@ -1,6 +1,18 @@
 const express = require("express");
 const bodyparser = require("body-parser");
 const router = express.Router();
+const moongose = require("mongoose");
+const dbLink = require("./moongose/properties").DB_URL;
+const LoginModels = require("./moongose/Schema/LoginDetais");
+const LoginDetailsModel = LoginModels.LoginDetailsModel;
+const AdminUserDetailModel = LoginModels.AdminUserDetailModel;
+const bcrypt = require("bcrypt");
+
+moongose.connect(dbLink);
+
+moongose.connection.on("connected", () => {
+  console.log("connected");
+});
 
 const app = express();
 
@@ -411,32 +423,35 @@ const findIndex = (lists, id) => lists.findIndex((list) => list.id === id);
 function loginMidleware(req, res, next) {
   try {
     const { email, password } = req.body;
-    console.log(
-      "loginMidleware check",
-      req.body,
-      userCredentials.hasOwnProperty(email)
-    );
-    if (userCredentials.hasOwnProperty(email)) {
-      if (userCredentials[email].password === password) {
-        next();
-      } else {
+    LoginDetailsModel.find({ email }, async(err, loginList) => {
+      if (err) {
         res.statusCode = 401;
         res.send({ message: "Unauthorized User" });
+      } else {
+        const validPassword = await bcrypt.compare(password, loginList[0].password);
+        if (validPassword) {
+          next();
+        } else {
+          res.statusCode = 401;
+          res.send({ message: "Unauthorized User" });
+        }
       }
-    } else {
-      res.statusCode = 401;
-      res.send({ message: "Unauthorized User" });
-    }
-    //next();
+    });
   } catch (err) {
+    res.statusCode = 401;
     res.send({ message: "Unauthorized User" });
   }
 }
 
 function login(req, res) {
-  const { email, password } = req.body;
-  res.send(usersDetails[email]);
-  console.log("succ");
+  const { email } = req.body;
+  AdminUserDetailModel.find({ email },(err, usersDetails) => {
+    if (err) {
+      res.statusCode = 500;
+      res.send({ message: "Unable to Proccess your request" });
+    } else {
+      res.send(usersDetails[0])
+    } })
 }
 
 function getArtistList(req, res) {
@@ -501,7 +516,45 @@ function editProfile(req, res) {
   }
 }
 
+async  function createAdminLogin(req, res) {
+  const { email, password } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+  const loginDetails = new LoginDetailsModel({
+    email: email,
+    password: hashedPassword,
+  });
+  loginDetails.save((err, newCriden) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(newCriden);
+    }
+  });
+}
+
+async function createAdminDetails(req, res) {
+  const { firstName, lastName, mobileNumber, type, email} = req.body;
+  const adminDetails = new AdminUserDetailModel({
+    firstName: firstName,
+    lastName: lastName,
+    mobileNumber: mobileNumber,
+    type: type,
+    email: email,
+  });
+  adminDetails.save((err, newCriden) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(newCriden);
+    }
+  });
+}
+
+app.post("/createAdminLogin", createAdminLogin);
 app.post("/login", loginMidleware, login);
+app.post("/createAdmindetails", createAdminDetails);
+//app.post("/login", loginMidleware, login);
 app.get("/artistList", getArtistList);
 app.get("/genresList", getGenresList);
 app.post("/genresList", addGenresList);
