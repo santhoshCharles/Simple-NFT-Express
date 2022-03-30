@@ -6,7 +6,9 @@ const dbLink = require("./moongose/properties").DB_URL;
 const LoginModels = require("./moongose/Schema/LoginDetais");
 const LoginDetailsModel = LoginModels.LoginDetailsModel;
 const AdminUserDetailModel = LoginModels.AdminUserDetailModel;
+const ArtistListModel = require("./moongose/Schema/ArtistList");
 const bcrypt = require("bcrypt");
+const ArtistModel = require("./moongose/Schema/ArtistList");
 
 moongose.connect(dbLink);
 
@@ -413,22 +415,20 @@ let usersDetails = {
   },
 };
 
-const userCredentials = {
-  "santhosh@gmail.com": { password: "L@9" },
-  "san@gmail.com": { password: "G@9" },
-};
-
 const findIndex = (lists, id) => lists.findIndex((list) => list.id === id);
 
 function loginMidleware(req, res, next) {
   try {
     const { email, password } = req.body;
-    LoginDetailsModel.find({ email }, async(err, loginList) => {
+    LoginDetailsModel.find({ email }, async (err, loginList) => {
       if (err) {
         res.statusCode = 401;
         res.send({ message: "Unauthorized User" });
       } else {
-        const validPassword = await bcrypt.compare(password, loginList[0].password);
+        const validPassword = await bcrypt.compare(
+          password,
+          loginList[0].password
+        );
         if (validPassword) {
           next();
         } else {
@@ -445,22 +445,30 @@ function loginMidleware(req, res, next) {
 
 function login(req, res) {
   const { email } = req.body;
-  AdminUserDetailModel.find({ email },(err, usersDetails) => {
+  AdminUserDetailModel.find({ email }, (err, usersDetails) => {
     if (err) {
       res.statusCode = 500;
       res.send({ message: "Unable to Proccess your request" });
     } else {
-      res.send(usersDetails[0])
-    } })
+      res.send(usersDetails[0]);
+    }
+  });
 }
 
-function getArtistList(req, res) {
-  try {
-    res.send(ArtistsList);
-  } catch (err) {
-    res.statusCode = 401;
-    res.send("Somthing going wrong");
-  }
+
+let artistCount = null;
+
+async function getArtistList(req, res) {
+  
+  const { pageNumber } = req.body;
+  console.log('pageNumber', pageNumber)
+  const pageLimit = 10;
+  const artistList = await ArtistModel.find()
+    .limit(pageLimit)
+    .skip((pageNumber - 1) * 10)
+    .exec();
+  artistCount = artistCount === null ? await ArtistModel.count({}) : artistCount;
+  res.send({ artistList, artistCount })
 }
 
 function getGenresList(req, res) {
@@ -516,7 +524,7 @@ function editProfile(req, res) {
   }
 }
 
-async  function createAdminLogin(req, res) {
+async function createAdminLogin(req, res) {
   const { email, password } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
@@ -534,7 +542,7 @@ async  function createAdminLogin(req, res) {
 }
 
 async function createAdminDetails(req, res) {
-  const { firstName, lastName, mobileNumber, type, email} = req.body;
+  const { firstName, lastName, mobileNumber, type, email } = req.body;
   const adminDetails = new AdminUserDetailModel({
     firstName: firstName,
     lastName: lastName,
@@ -551,11 +559,41 @@ async function createAdminDetails(req, res) {
   });
 }
 
+function saveArtistList(req, res) {
+  const { UserName, Email, WalletAddress } = req.body;
+  const artistDetails = new ArtistModel({
+    UserName: UserName,
+    Email: Email,
+    WalletAddress: WalletAddress,
+  });
+  artistDetails.save((err, newCriden) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(newCriden);
+    }
+  });
+}
+
+function escapeRegex(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+}
+
+async function searchArtistList(req, res) {
+  const { UserName } = req.body;
+  const regex = new RegExp(escapeRegex(UserName));
+  const artistResult = await ArtistListModel.find(
+    { $or: [{ UserName: regex }, { Email: regex }] });
+  res.send(artistResult);
+}
+
 app.post("/createAdminLogin", createAdminLogin);
 app.post("/login", loginMidleware, login);
 app.post("/createAdmindetails", createAdminDetails);
 //app.post("/login", loginMidleware, login);
-app.get("/artistList", getArtistList);
+app.post("/artist", saveArtistList);
+app.post("/artistList", getArtistList);
+app.post("/artistSearch", searchArtistList);
 app.get("/genresList", getGenresList);
 app.post("/genresList", addGenresList);
 app.put("/genresList", editGenresList);
