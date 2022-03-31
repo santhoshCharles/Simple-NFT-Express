@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const ArtistModel = require("../moongose/Schema/ArtistList");
+const ArtistModel = require("../moongose/Schema/ArtistListModel");
 const Helper = require("../Helper/Helper");
-//const ArtistListModel = require("../moongose/Schema/ArtistList");
 const escapeRegex = Helper.escapeRegex;
+const config = require("../Config/Config");
+const PAGE_SIZE = config.ARTIST_PAGE_SIZE;
 
 function saveArtistList(req, res) {
   const { UserName, Email, WalletAddress } = req.body;
@@ -25,10 +26,9 @@ let artistCount = null;
 
 async function getArtistList(req, res) {
   const { pageNumber } = req.body;
-  const pageLimit = 10;
   const artistList = await ArtistModel.find()
-    .limit(pageLimit)
-    .skip((pageNumber - 1) * 10)
+    .limit(PAGE_SIZE)
+    .skip((pageNumber - 1) * PAGE_SIZE)
     .exec();
   artistCount =
     artistCount === null ? await ArtistModel.count({}) : artistCount;

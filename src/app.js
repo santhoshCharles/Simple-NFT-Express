@@ -16,11 +16,6 @@ const app = express();
 
 app.use(bodyparser.json());
 
-app.get("/", (req, res) => {
-  res.send("this is post");
-});
-
-
 app.use("/artist", ArtistRouter);
 app.use("/login", LoginRouter);
 app.use("/genres", GenresRouter);
