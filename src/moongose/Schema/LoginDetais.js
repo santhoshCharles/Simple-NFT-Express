@@ -1,6 +1,9 @@
 const mongose = require("mongoose");
-const LOGIN_DETAILS_MODEL = require("../properties").LOGIN_DETAILS_MODEL;
-const ADMIN_DETAILS_MODEL = require("../properties").ADMIN_DETAILS_MODEL;
+const SchemaName = require("../properties");
+const LOGIN_DETAILS_MODEL = SchemaName.LOGIN_DETAILS_MODEL;
+const ADMIN_DETAILS_MODEL = SchemaName.ADMIN_DETAILS_MODEL;
+const AUTHOR_USER_DETAILS = SchemaName.AUTHOR_USER_DETAILS;
+const USER_TYPE_DETAILS = SchemaName.USER_TYPE_DETAILS;
 
 const loginDetailSchema = mongose.Schema({
     email: {type: String, unique: true},
@@ -14,12 +17,19 @@ const adminUserDetailSchema = mongose.Schema({
     lastName: String,
     mobileNumber: { type: Number, required: true },
     type: { type: String, enum: ["admin", "author", "user"]},
-    email: { type: String, required: true, unique: true},
+    email: { type: String, required: true, unique: true}
+})
+
+const authorDetailsSchema = mongose.Schema({
+    userName: { type: String, required: true, unique: true},
+    genres: Array
 })
 
 const AdminUserDetailModel = mongose.model(ADMIN_DETAILS_MODEL, adminUserDetailSchema);
+const AuthorDetailsModel =AdminUserDetailModel.discriminator(AUTHOR_USER_DETAILS, authorDetailsSchema);
 
 module.exports = {
     LoginDetailsModel: LoginDetailsModel,
-    AdminUserDetailModel: AdminUserDetailModel
+    AdminUserDetailModel: AdminUserDetailModel,
+    AuthorDetailsModel: AuthorDetailsModel
 };

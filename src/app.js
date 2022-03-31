@@ -5,6 +5,7 @@ const dbLink = require("./moongose/properties").DB_URL;
 const ArtistRouter = require("./Routes/Artist");
 const LoginRouter = require("./Routes/Authentication");
 const GenresRouter = require("./Routes/Genres");
+const UserRouter = require("./Routes/Users");
 
 moongose.connect(dbLink);
 
@@ -19,5 +20,6 @@ app.use(bodyparser.json());
 app.use("/artist", ArtistRouter);
 app.use("/login", LoginRouter);
 app.use("/genres", GenresRouter);
+app.use("/user", UserRouter);
 
 app.listen(5001);

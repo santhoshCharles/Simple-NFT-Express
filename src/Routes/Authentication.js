@@ -60,7 +60,7 @@ function login(req, res) {
     });
 }
 
-router.post("/createAdminLogin", createAdminLogin);
+router.post("/signin", createAdminLogin);
 router.post("/", loginMidleware, login);
 
 module.exports = router;
