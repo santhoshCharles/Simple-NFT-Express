@@ -17,12 +17,14 @@ const adminUserDetailSchema = mongose.Schema({
     lastName: String,
     mobileNumber: { type: Number, required: true },
     type: { type: String, enum: ["admin", "author", "user"]},
-    email: { type: String, required: true, unique: true}
+    email: { type: String, required: true, unique: true},
+    updated: { type: Date, default: Date.now }
 })
 
 const authorDetailsSchema = mongose.Schema({
     userName: { type: String, required: true, unique: true},
-    genres: Array
+    genres: Array,
+    bio: String
 })
 
 const AdminUserDetailModel = mongose.model(ADMIN_DETAILS_MODEL, adminUserDetailSchema);

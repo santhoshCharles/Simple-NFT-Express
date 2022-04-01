@@ -6,7 +6,7 @@ const AuthorDetailsModel =
   require("../moongose/Schema/LoginDetais").AuthorDetailsModel;
 
 async function createUserDetails(req, res) {
-  const { firstName, lastName, mobileNumber, type, email, userName, genres } = req.body;
+  const { firstName, lastName, mobileNumber, type, email, userName, genres, bio } = req.body;
   let userDetails;
   switch (type) {
     case "admin":
@@ -26,7 +26,8 @@ async function createUserDetails(req, res) {
         type: type,
         email: email,
         userName: userName,
-        genres: genres
+        genres: genres,
+        bio: bio
       });
       break;
   }
@@ -42,12 +43,22 @@ async function createUserDetails(req, res) {
 
 async function editUserDetails(req, res) {
   const { id, payload } = req.body;
-  //console.log('id, payload', id, payload)
+  let updateUser ;
   try {
-    const updateUser = await AdminUserDetailModel.findByIdAndUpdate(id, {
-      $set: payload,
-    });
-    res.send(payload);
+    switch (payload.type) {
+      case "admin":
+        updateUser = await AdminUserDetailModel.findByIdAndUpdate(id, {
+          $set: payload,
+        });
+      break;
+      case "author":
+        console.log('id, payload', id, payload)
+        updateUser = await AuthorDetailsModel.findByIdAndUpdate(id, {
+          $set: payload,
+        });
+      break;
+    }
+    res.send(updateUser);
   } catch (err) {
     console.log("err", err);
     res.send(err);
