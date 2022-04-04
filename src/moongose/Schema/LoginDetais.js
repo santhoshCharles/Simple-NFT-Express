@@ -24,7 +24,8 @@ const adminUserDetailSchema = mongose.Schema({
 const authorDetailsSchema = mongose.Schema({
     userName: { type: String, required: true, unique: true},
     genres: Array,
-    bio: String
+    bio: String,
+    walletAddress: String
 })
 
 const AdminUserDetailModel = mongose.model(ADMIN_DETAILS_MODEL, adminUserDetailSchema);

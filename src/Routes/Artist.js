@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const ArtistModel = require("../moongose/Schema/ArtistListModel");
+const ArtistModel = require("../moongose/Schema/LoginDetais").AuthorDetailsModel;
 const Helper = require("../Helper/Helper");
 const escapeRegex = Helper.escapeRegex;
 const config = require("../Config/Config");
@@ -22,30 +22,38 @@ function saveArtistList(req, res) {
   });
 }
 
-let artistCount = null;
-
 async function getArtistList(req, res) {
   const { pageNumber } = req.body;
   const artistList = await ArtistModel.find()
     .limit(PAGE_SIZE)
     .skip((pageNumber - 1) * PAGE_SIZE)
     .exec();
-  artistCount =
-    artistCount === null ? await ArtistModel.count({}) : artistCount;
-  res.send({ artistList, artistCount });
+  
+  res.send(artistList);
 }
 
 async function searchArtistList(req, res) {
   const { UserName } = req.body;
   const regex = new RegExp(escapeRegex(UserName));
   const artistResult = await ArtistModel.find({
-    $or: [{ UserName: regex }, { Email: regex }],
+    $or: [{ userName: regex }, { email: regex }],
   });
   res.send(artistResult);
 }
 
+async function getArtistCount(req, res) {
+  try {
+    const artistCount = await ArtistModel.count({});
+    res.send({artistCount});
+  } catch(err) {
+    console.log('err', err);
+  }
+}
+
+
 router.post("/", saveArtistList);
 router.post("/list", getArtistList);
 router.post("/search", searchArtistList);
+router.get("/count", getArtistCount);
 
 module.exports = router;

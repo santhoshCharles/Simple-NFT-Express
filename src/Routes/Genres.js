@@ -4,21 +4,16 @@ const GenresModel = require("../moongose/Schema/GenresModel");
 const escapeRegex = require("../Helper/Helper").escapeRegex;
 const PAGE_SIZE = require("../Config/Config").GENRES_PAGE_SIZE;
 
-let genresCount = null;
 
 async function getGenresList(req, res) {
   try {
   const { pageNumber } = req.body;
-  console.log('pageNumber', pageNumber)
 
   const genresList = await GenresModel.find()
     .limit(PAGE_SIZE)
     .skip((pageNumber - 1) * PAGE_SIZE)
     .exec();
-  genresCount =
-    genresCount === null ? await GenresModel.count({}) : genresCount;
-    console.log('getGenresList', genresList, genresCount)
-  res.send({ genresList, genresCount });
+  res.send( genresList );
   } catch(err) {
     console.log('err', err);
   }
@@ -45,7 +40,6 @@ function addGenresList(req, res) {
 
 async function editGenresList(req, res) {
   const { id, payload } = req.body;
-  console.log("id", id, payload, req.body);
   try {
     const updateGenres = await GenresModel.findByIdAndUpdate(id, {
       $set: payload,
@@ -62,7 +56,6 @@ async function deleteGenresList(req, res) {
   const { id } = req.body.payload;
   try {
     const deleteGenres = await GenresModel.deleteOne({ _id: id });
-    console.log("deleteGenres", deleteGenres);
     const genresList = await getAllGenres();
     res.send(genresList);
   } catch (err) {
@@ -79,10 +72,21 @@ const searchGenres = async (req, res) => {
   res.send(genresResult);
 };
 
+async function getGenresCount(req, res) {
+  try {
+    const genresCount = await GenresModel.count({});
+    res.send({genresCount});
+  } catch(err) {
+    console.log('err', err);
+  }
+}
+
+
 router.post("/list", getGenresList);
 router.post("/genresList", addGenresList);
 router.put("/genresList", editGenresList);
 router.delete("/genresList", deleteGenresList);
 router.post("/search/genres", searchGenres);
+router.get("/count", getGenresCount);
 
 module.exports = router;

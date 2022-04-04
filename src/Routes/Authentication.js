@@ -10,6 +10,7 @@ function loginMidleware(req, res, next) {
       const { email, password } = req.body;
       LoginDetailsModel.find({ email }, async (err, loginList) => {
         if (err) {
+          console.log('err', err);
           res.statusCode = 401;
           res.send({ message: "Unauthorized User" });
         } else {
@@ -20,12 +21,14 @@ function loginMidleware(req, res, next) {
           if (validPassword) {
             next();
           } else {
+            console.log('err', err);
             res.statusCode = 401;
             res.send({ message: "Unauthorized User" });
           }
         }
       });
     } catch (err) {
+      console.log('err', err);
       res.statusCode = 401;
       res.send({ message: "Unauthorized User" });
     }
@@ -52,6 +55,7 @@ function login(req, res) {
     const { email } = req.body;
     AdminUserDetailModel.find({ email }, (err, usersDetails) => {
       if (err) {
+        console.log('err', err);
         res.statusCode = 500;
         res.send({ message: "Unable to Proccess your request" });
       } else {

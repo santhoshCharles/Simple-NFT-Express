@@ -52,7 +52,6 @@ async function editUserDetails(req, res) {
         });
       break;
       case "author":
-        console.log('id, payload', id, payload)
         updateUser = await AuthorDetailsModel.findByIdAndUpdate(id, {
           $set: payload,
         });
