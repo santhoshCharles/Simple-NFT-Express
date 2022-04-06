@@ -5,5 +5,6 @@ module.exports = {
     LOGIN_DETAILS_MODEL: "Login",
     ADMIN_DETAILS_MODEL: "AdminUserDetail",
     GENRES_MODEL: "GenresDetails",
-    AUTHOR_USER_DETAILS: "AuthoruserDetails"
+    AUTHOR_USER_DETAILS: "AuthoruserDetails",
+    VISITOR_DETAILS: "VisitorDetails"
 }

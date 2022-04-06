@@ -4,9 +4,21 @@ const AdminUserDetailModel =
   require("../moongose/Schema/LoginDetais").AdminUserDetailModel;
 const AuthorDetailsModel =
   require("../moongose/Schema/LoginDetais").AuthorDetailsModel;
+const { checkAdminAndArtistAuth } = require("../Helper/MiddleWare");
+const { verifyToken } = require("../Helper/Auth");
+const { checkAuth } = require("../Helper/MiddleWare");
 
 async function createUserDetails(req, res) {
-  const { firstName, lastName, mobileNumber, type, email, userName, genres, bio } = req.body;
+  const {
+    firstName,
+    lastName,
+    mobileNumber,
+    type,
+    email,
+    userName,
+    genres,
+    bio,
+  } = req.body;
   let userDetails;
   switch (type) {
     case "admin":
@@ -27,7 +39,7 @@ async function createUserDetails(req, res) {
         email: email,
         userName: userName,
         genres: genres,
-        bio: bio
+        bio: bio,
       });
       break;
   }
@@ -43,19 +55,19 @@ async function createUserDetails(req, res) {
 
 async function editUserDetails(req, res) {
   const { id, payload } = req.body;
-  let updateUser ;
+  let updateUser;
   try {
     switch (payload.type) {
       case "admin":
         updateUser = await AdminUserDetailModel.findByIdAndUpdate(id, {
           $set: payload,
         });
-      break;
+        break;
       case "author":
         updateUser = await AuthorDetailsModel.findByIdAndUpdate(id, {
           $set: payload,
         });
-      break;
+        break;
     }
     res.send(updateUser);
   } catch (err) {
@@ -64,7 +76,19 @@ async function editUserDetails(req, res) {
   }
 }
 
-router.post("/create", createUserDetails);
-router.post("/edit", editUserDetails);
+async function sendUserDetails(req, res) {
+  try{
+  const user = verifyToken(req.headers["authorization"].split(" ")[1]);
+  const userDetails = await AdminUserDetailModel.find({email: user.email});
+  res.send({usersDetails: userDetails[0]})
+  } catch(err) {
+    console.log('err', err)
+    res.status(401).send({message: "User not found"});
+  }
+}
+
+router.post("/create", [checkAuth, checkAdminAndArtistAuth], createUserDetails);
+router.post("/edit", [checkAuth, checkAdminAndArtistAuth], editUserDetails);
+router.post("/details", [checkAuth, checkAdminAndArtistAuth], sendUserDetails);
 
 module.exports = router;

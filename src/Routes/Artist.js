@@ -5,6 +5,7 @@ const Helper = require("../Helper/Helper");
 const escapeRegex = Helper.escapeRegex;
 const config = require("../Config/Config");
 const PAGE_SIZE = config.ARTIST_PAGE_SIZE;
+const { checkAuth } = require("../Helper/MiddleWare");
 
 function saveArtistList(req, res) {
   const { UserName, Email, WalletAddress } = req.body;
@@ -51,9 +52,9 @@ async function getArtistCount(req, res) {
 }
 
 
-router.post("/", saveArtistList);
-router.post("/list", getArtistList);
-router.post("/search", searchArtistList);
-router.get("/count", getArtistCount);
+router.post("/", checkAuth, saveArtistList);
+router.post("/list", checkAuth, getArtistList);
+router.post("/search", checkAuth, searchArtistList);
+router.get("/count", checkAuth, getArtistCount);
 
 module.exports = router;

@@ -3,6 +3,8 @@ const router = express.Router();
 const GenresModel = require("../moongose/Schema/GenresModel");
 const escapeRegex = require("../Helper/Helper").escapeRegex;
 const PAGE_SIZE = require("../Config/Config").GENRES_PAGE_SIZE;
+const { checkAdminAuth } = require("../Helper/MiddleWare");
+const { checkAuth } = require("../Helper/MiddleWare");
 
 
 async function getGenresList(req, res) {
@@ -53,7 +55,7 @@ async function editGenresList(req, res) {
 }
 
 async function deleteGenresList(req, res) {
-  const { id } = req.body.payload;
+  const  id  = req.body?.payload?.id;
   try {
     const deleteGenres = await GenresModel.deleteOne({ _id: id });
     const genresList = await getAllGenres();
@@ -82,11 +84,11 @@ async function getGenresCount(req, res) {
 }
 
 
-router.post("/list", getGenresList);
-router.post("/genresList", addGenresList);
-router.put("/genresList", editGenresList);
-router.delete("/genresList", deleteGenresList);
-router.post("/search/genres", searchGenres);
-router.get("/count", getGenresCount);
+router.post("/list",checkAuth, getGenresList);
+router.post("/genresList",[checkAuth, checkAdminAuth], addGenresList);
+router.put("/genresList",[checkAuth,checkAdminAuth], editGenresList);
+router.delete("/genresList",[checkAuth,checkAdminAuth], deleteGenresList);
+router.post("/search/genres",checkAuth, searchGenres);
+router.get("/count",checkAuth, getGenresCount);
 
 module.exports = router;

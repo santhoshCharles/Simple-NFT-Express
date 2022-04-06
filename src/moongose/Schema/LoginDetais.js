@@ -3,7 +3,7 @@ const SchemaName = require("../properties");
 const LOGIN_DETAILS_MODEL = SchemaName.LOGIN_DETAILS_MODEL;
 const ADMIN_DETAILS_MODEL = SchemaName.ADMIN_DETAILS_MODEL;
 const AUTHOR_USER_DETAILS = SchemaName.AUTHOR_USER_DETAILS;
-const USER_TYPE_DETAILS = SchemaName.USER_TYPE_DETAILS;
+const VISITOR_DETAILS = SchemaName.VISITOR_DETAILS;
 
 const loginDetailSchema = mongose.Schema({
     email: {type: String, unique: true},
@@ -28,11 +28,18 @@ const authorDetailsSchema = mongose.Schema({
     walletAddress: String
 })
 
+const visitorDetailsSchema = mongose.Schema({
+    email: { type: String, unique: true },
+    walletAddress: String
+})
+
 const AdminUserDetailModel = mongose.model(ADMIN_DETAILS_MODEL, adminUserDetailSchema);
-const AuthorDetailsModel =AdminUserDetailModel.discriminator(AUTHOR_USER_DETAILS, authorDetailsSchema);
+const AuthorDetailsModel = AdminUserDetailModel.discriminator(AUTHOR_USER_DETAILS, authorDetailsSchema);
+const VisitorDetailsModel = mongose.model(VISITOR_DETAILS, visitorDetailsSchema);
 
 module.exports = {
     LoginDetailsModel: LoginDetailsModel,
     AdminUserDetailModel: AdminUserDetailModel,
-    AuthorDetailsModel: AuthorDetailsModel
+    AuthorDetailsModel: AuthorDetailsModel,
+    VisitorDetailsModel: VisitorDetailsModel
 };
