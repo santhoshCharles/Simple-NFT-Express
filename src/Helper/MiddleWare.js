@@ -72,7 +72,7 @@ function checkAuth(req, res, next) {
       if(user !== null) next();
     } catch(err) {
         res.statusCode = 401;
-        res.send({ message: "Token Expired" });
+        res.send({ message: "Unauthorized User" });
     }
 } 
 
